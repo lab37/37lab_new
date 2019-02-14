@@ -25,14 +25,14 @@
 	float: left;
 	width: 210px;
 	height: 50px;
-	background: url("../img/LOGO_WEPE.png");
+	background: url("../img/LOGO_37.png");
 }
 #header .logo .slogon {
 	float: left;
 	margin-left: 5px;
 	width: 140px;
 	height: 50px;
-	background: url("../img/LOGO_SLOGAN.png");
+	background: url("../img/LOGO_37a.png");
 }
 
 #header .nav {
