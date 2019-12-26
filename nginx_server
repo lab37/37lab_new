@@ -3,8 +3,8 @@ server {
 	listen [::]:80;
 	listen 443 ssl;
 	#因为下面是相对路径，这两个证书文件要放到/etc/ngnix/cert/lab37/目录下
-    ssl_certificate   cert/lab37/214701464350450.pem;
-    ssl_certificate_key  cert/lab37/214701464350450.key;
+    ssl_certificate   cert/lab37/lab37.cn_chain.crt;
+    ssl_certificate_key  cert/lab37/lab37.cn_key.key;
     ssl_session_timeout 5m;
     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
