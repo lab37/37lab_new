@@ -68,3 +68,9 @@
 #header .nav a.current i {
 	display: block;
 }
+
+
+html {
+    filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+    -webkit-filter: grayscale(100%);
+}
