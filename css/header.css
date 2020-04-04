@@ -69,8 +69,14 @@
 	display: block;
 }
 
-
+/* 使用css滤镜把页面变为灰度模式，适用于悼念日 */
+/*   
 html {
+	-webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: grayscale(100%);
     filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
-    -webkit-filter: grayscale(100%);
 }
+*/
