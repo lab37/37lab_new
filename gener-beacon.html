@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+
+<body>
+    <h1>802.11协议beacon包生成器</h1>
+    <div class="container">
+        <div class="filePicker">
+            <p>请输入AP的mac地址：<input id="BSSID" type="text" name="bssid"></p>
+            <p>请输入AP的无线名称：<input id="ESSID" type="text" name="essid"></p>
+            <p>请输入AP所在信道：<input id="Channel" type="text" name="channel"></p>
+           <!--  <label>请选择握手包文件</label>
+            <input id="fileInput" type="file" name="file" multiple="multiple" accept=""> -->
+            <p><input id="Submit" type="submit" value="生成" onclick="create()"></p>
+        </div>
+    </div>
+    <ul>
+        <li>mac地址不能有特殊符号, 比如A3:BF:32:22:E3:3B要输入成A3BF3222E33B。里面不能有任何符号。</li>
+        <li>使用wireshark把生成的beacon包和抓到的pcap包合并成一个文件，这个合并生成的文件即是一个完整文件了。</li> 
+        <li><a target="_blank" href="https://blog.csdn.net/u011186532/article/details/127166613">wireshark合并文件的方法</a></li>
+      </ul>
+
+
+    <script>
+        /* 
+            beacon0是pcap的24字节文件头加上16字节pcap数据包头
+            然后就是数据部分，本例中数据部分是802.11管理帧beacon：
+            beacon1是802.11帧类型80 00, 信道占用时间00 00 , 目的mac地址：0xff, 0xff, 0xff, 0xff, 0xff, 0xff 共10个字节
+            beacon2是源mac地址, 要重复2遍，共12个字节
+            beacon3是2个字节的帧序列号，加上8个字节时间戳，2个字节的周期间隔（微秒），2个字节的性能标志，1个字节的元素识别码（0代表下个元素是ESSID），共15个字节
+            beacon4是ap的无线名称长度和名字。
+            beacon5是AP在频段支持的传输速率占10个字节，加1个字节的元素识别码（3代表信道），1个字节的元素长度。共12个字节
+            beacon6是ap信道,正常前面还有一个字节代表信道字节的长度, 因这个一般2.4G就一个字节就够了, 就把长度01写死在beancon5最后了
+            beacon7是一些附加信息共76个字节
+            包结构文档：https://www.cnblogs.com/codemariosec/p/16262934.html
+        */
+        function create() {
+            let beacon0 = [0xd4, 0xc3, 0xb2, 0xa1, 0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x69, 0x00, 0x00, 0x00, 0xa8, 0x5d, 0xc2, 0x45, 0x96, 0xeb, 0x03, 0x00, 0x84, 0x00, 0x00, 0x00, 0x84, 0x00, 0x00, 0x00]
+            let beacon1 = [0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]
+            let beacon3 = [0x80, 0x54, 0x81, 0xa1, 0x85, 0x16, 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x31, 0x04, 0x00] 
+            let beacon5 = [0x01, 0x08, 0x82, 0x84, 0x8b, 0x96, 0x8c, 0x12, 0x98, 0x24, 0x03, 0x01]
+            let beacon7 = [0x05, 0x04, 0x00, 0x01, 0x00, 0x00, 0x2a, 0x01, 0x00, 0x32, 0x04, 0x12, 0x24, 0x60, 0x6c, 0xdd, 0x09, 0x00, 0x03, 0x7f, 0x01, 0x01, 0x00, 0x0e, 0x00, 0x00, 0xdd, 0x0c, 0x00, 0x03, 0x7f, 0x02, 0x01, 0x01, 0x00, 0x00, 0x02, 0xa3, 0x40, 0x00, 0xdd, 0x1a, 0x00, 0x03, 0x7f, 0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x13, 0x46, 0x0b, 0x22, 0xba, 0x02, 0x13, 0x46, 0x0b, 0x22, 0xba, 0x64, 0x00, 0x2c, 0x01, 0x0e, 0x08, 0xdd, 0x06, 0x00, 0x03, 0x2f, 0x01, 0x00, 0x01]
+            var fileInput = document.getElementById("fileInput");
+            /*  fileInput.addEventListener('change', function (event) { */
+            let bssid = document.getElementById("BSSID").value
+            let beacon2 = []
+            for (var i = 0; i < bssid.length - 1; i = i + 2) {
+                beacon2.push(parseInt(bssid.slice(i, i + 2), 16))
+            }
+            let beacon = beacon0.concat(beacon1)
+            beacon.push.apply(beacon, beacon2)
+            beacon.push.apply(beacon, beacon2)
+            beacon.push.apply(beacon, beacon3)
+            let essid = document.getElementById("ESSID").value
+            beacon.push(essid.length)
+            for (var i = 0; i < essid.length; i++) {
+                beacon.push(essid.charCodeAt(i))
+            }
+            beacon.push.apply(beacon, beacon5)
+            let channel = parseInt(document.getElementById("Channel").value, 10)
+            beacon.push(channel)
+            beacon.push.apply(beacon, beacon7)
+            console.log(beacon.length)
+            beacon[32] = beacon.length-40
+            beacon[36] = beacon.length-40
+
+            memDownload(Uint8Array.from(beacon), 'beacon.pcap')
+        }
+        function memDownload(content, filename) {
+            // 创建隐藏的可下载链接
+            var eleLink = document.createElement('a');
+            eleLink.download = filename;
+            eleLink.style.display = 'none';
+            // 字符内容转变成blob地址
+            var blob = new Blob([content], { type: "application/octet-stream" });
+            console.log(blob)
+            eleLink.href = URL.createObjectURL(blob);
+            // 触发点击
+            document.body.appendChild(eleLink);
+            eleLink.click();
+            // 然后移除
+            document.body.removeChild(eleLink);
+        }        
+    </script>
+</body>
+
+</html>
